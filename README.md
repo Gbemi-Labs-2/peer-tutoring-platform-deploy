@@ -46,3 +46,4 @@ and persistence will be added in later iterations.
 ## Team
 
 - Name — role
+- Olubiyi Elijah(Fullstack Dev)
