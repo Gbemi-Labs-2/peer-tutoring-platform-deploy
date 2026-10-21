@@ -1,0 +1,34 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and debug output
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test and coverage output
+coverage/
+.nyc_output/
+
+# Tool caches
+.cache/
+.vite/
+.eslintcache
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Local editor files
+.idea/
+*.swp
+*.swo
