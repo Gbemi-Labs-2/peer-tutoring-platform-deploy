@@ -47,3 +47,6 @@ and persistence will be added in later iterations.
 
 - Name — role
 - Olubiyi Elijah(Fullstack Dev)
+
+- Name - role
+- Hammed Abdulhamid - Frontend dev
