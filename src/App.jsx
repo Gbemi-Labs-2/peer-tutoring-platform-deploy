@@ -34,6 +34,14 @@ function App() {
     setShowRequest(true);
   };
 
+  if (activeView === "Auth") {
+    return (
+      <div className="auth-app">
+        <AuthView onLogin={() => setActiveView("Home")} />
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <Sidebar activeView={activeView} onNavigate={setActiveView} onLogout={() => setActiveView("Auth")} />
@@ -53,7 +61,6 @@ function App() {
           {activeView === "Tutor Profile" && <TutorProfile tutor={selectedTutor} onBack={() => setActiveView("Find Tutors")} onRequest={openRequest} />}
           {activeView === "Resources" && <ResourcesView />}
           {activeView === "Profile" && <ProfileView />}
-          {activeView === "Auth" && <AuthView onLogin={() => setActiveView("Home")} />}
           {["Find Learners", "Messages", "Notifications"].includes(activeView) && <EmptyView title={activeView} />}
         </div>
       </main>
@@ -142,7 +149,130 @@ function ProfileView() {
 
 function AuthView({ onLogin }) {
   const [mode, setMode] = useState("login");
-  return <div className="auth-screen"><div className="auth-hero"><span className="auth-logo">◆</span><h1>StudyConnect</h1><p>Learn · Support · Grow</p><small>A peer-to-peer platform for physical and departmental resource sharing.</small><footer>Our Campus &nbsp;|&nbsp; Built by Students, For Students</footer></div><div className="auth-card"><div className="auth-tabs"><button className={mode === "login" ? "selected" : ""} onClick={() => setMode("login")}>Log In</button><button className={mode === "signup" ? "selected" : ""} onClick={() => setMode("signup")}>Sign Up</button></div><h2>{mode === "login" ? "Welcome Back" : "Create Your Account"}</h2>{mode === "signup" && <div className="role-toggle"><label><input type="radio" defaultChecked name="role" /> Learner</label><label><input type="radio" name="role" /> Tutor</label></div>}<label>Username<input placeholder="Enter your username" /></label>{mode === "signup" && <><label>Student ID<input placeholder="Enter your student ID" /></label><label>Department<select><option>Select your department</option><option>Computer Science</option><option>Mathematics</option></select></label><label>Level<select><option>Select your level</option><option>100 Level</option><option>300 Level</option></select></label></>}<label>Password<input type="password" placeholder="Enter your password" /></label><button className="primary-button auth-submit" onClick={onLogin}>{mode === "login" ? "Log In" : "Sign Up"}</button><p className="auth-switch">{mode === "login" ? "Don’t have an account? " : "Already have an account? "}<button onClick={() => setMode(mode === "login" ? "signup" : "login")}>{mode === "login" ? "Sign Up" : "Log In"}</button></p></div></div>;
+
+  return (
+    <main className="auth-screen">
+      <section className="auth-hero" aria-label="About StudyConnect">
+        <div className="auth-brand">
+          <span className="auth-logo">◆</span>
+          <span>StudyConnect</span>
+        </div>
+        <h1>StudyConnect</h1>
+        <p className="auth-tagline">
+          Learn <span>·</span> Support <span>·</span> Grow
+        </p>
+        <p className="auth-description">
+          A peer-to-peer platform for physical and departmental resource sharing.
+        </p>
+        <footer>Our Campus <span>·</span> Built by Students, For Students</footer>
+      </section>
+
+      <section
+        className="auth-form-side"
+        aria-label={mode === "login" ? "Log in" : "Create an account"}
+      >
+        <div className="auth-card">
+          <div className="auth-tabs" role="tablist" aria-label="Account access">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "login"}
+              className={mode === "login" ? "selected" : ""}
+              onClick={() => setMode("login")}
+            >
+              Log In
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === "signup"}
+              className={mode === "signup" ? "selected" : ""}
+              onClick={() => setMode("signup")}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <h2>{mode === "login" ? "Welcome Back" : "Create Your Account"}</h2>
+
+          {mode === "signup" && (
+            <div className="role-toggle">
+              <label><input type="radio" defaultChecked name="role" /> Learner</label>
+              <label><input type="radio" name="role" /> Tutor</label>
+            </div>
+          )}
+
+          {mode === "signup" && (
+            <label>
+              Full Name
+              <input autoComplete="name" placeholder="Enter your full name" />
+            </label>
+          )}
+
+          {mode === "signup" && (
+            <label>
+              Student ID
+              <input placeholder="Enter your student ID" />
+            </label>
+          )}
+
+          {mode === "signup" && (
+            <label>
+              Department
+              <select defaultValue="">
+                <option value="" disabled>Select your department</option>
+                <option>Computer Science</option>
+                <option>Mathematics</option>
+              </select>
+            </label>
+          )}
+
+          {mode === "signup" && (
+            <label>
+              Level
+              <select defaultValue="">
+                <option value="" disabled>Select your level</option>
+                <option>100 Level</option>
+                <option>300 Level</option>
+              </select>
+            </label>
+          )}
+
+          <label>
+            Email Address
+            <input
+              type="email"
+              autoComplete="email"
+              placeholder="Enter your email address"
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              type="password"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              placeholder="Enter your password"
+            />
+          </label>
+
+          <button className="primary-button auth-submit" onClick={onLogin}>
+            {mode === "login" ? "Log In" : "Sign Up"}
+          </button>
+
+          <p className="auth-switch">
+            {mode === "login" ? "Don’t have an account? " : "Already have an account? "}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            >
+              {mode === "login" ? "Sign Up" : "Log In"}
+            </button>
+          </p>
+        </div>
+      </section>
+    </main>
+  );
 }
 
 function EmptyView({ title }) {
