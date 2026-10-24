@@ -12,9 +12,11 @@ import {
   Home01Icon,
   Location01Icon,
   Logout01Icon,
+  Menu01Icon,
   Mail01Icon,
   Moon02Icon,
   Notification01Icon,
+  Cancel01Icon,
   Search01Icon,
   Settings01Icon,
   Sun03Icon,
@@ -46,16 +48,22 @@ const sessions = [
 ];
 
 function App() {
-  const [activeView, setActiveView] = useState("Home");
+  const [activeView, setActiveView] = useState("Auth");
   const [showRequest, setShowRequest] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState(tutors[0]);
   const [selectedSession, setSelectedSession] = useState(sessions[0]);
   const [theme, setTheme] = useState(() => localStorage.getItem("studyconnect-theme") || "light");
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const openRequest = () => {
     setRequestSent(false);
     setShowRequest(true);
+  };
+
+  const navigate = (view) => {
+    setActiveView(view);
+    setIsMenuOpen(false);
   };
 
   if (activeView === "Auth") {
@@ -68,21 +76,32 @@ function App() {
 
   return (
     <div className={`app-shell theme-${theme}`}>
-      <Sidebar activeView={activeView} onNavigate={setActiveView} onLogout={() => setActiveView("Auth")} />
+      <Sidebar activeView={activeView} isOpen={isMenuOpen} onNavigate={navigate} onLogout={() => navigate("Auth")} />
       <main className="main-content">
         <header className="topbar">
+          <button
+            className="menu-toggle"
+            type="button"
+            aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="main-navigation"
+            onClick={() => setIsMenuOpen((open) => !open)}
+          >
+            <Icon icon={isMenuOpen ? Cancel01Icon : Menu01Icon} size={20} />
+            <span>Menu</span>
+          </button>
           <div className="mobile-brand"><span className="brand-mark"><Icon icon={GraduationCapIcon} size={16} /></span> StudyConnect</div>
           <div className="top-search"><Icon icon={Search01Icon} size={13} /><input placeholder="Search courses, tutors, or resources..." aria-label="Search" /></div>
           <button className="top-icon" aria-label="Search"><Icon icon={Search01Icon} size={16} /></button>
           <div className="user-chip"><div className="photo-avatar photo-chinedu">CO</div><span><strong>Chinedu Okafor</strong><small>Learner</small></span><b>⌄</b></div>
         </header>
         <div className="page">
-          {activeView === "Home" && <Dashboard onRequest={openRequest} onNavigate={setActiveView} />}
-          {activeView === "Find Tutors" && <TutorDirectory onRequest={openRequest} onTutor={(tutor) => { setSelectedTutor(tutor); setActiveView("Tutor Profile"); }} />}
-          {activeView === "My Sessions" && <SessionsView onRequest={openRequest} onSession={(session) => { setSelectedSession(session); setActiveView("Session Details"); }} />}
-          {activeView === "Session Details" && <SessionDetails session={selectedSession} onBack={() => setActiveView("My Sessions")} onChat={() => setActiveView("Chat Session")} />}
-          {activeView === "Chat Session" && <ChatSession session={selectedSession} onBack={() => setActiveView("Session Details")} />}
-          {activeView === "Tutor Profile" && <TutorProfile tutor={selectedTutor} onBack={() => setActiveView("Find Tutors")} onRequest={openRequest} />}
+          {activeView === "Home" && <Dashboard onRequest={openRequest} onNavigate={navigate} />}
+          {activeView === "Find Tutors" && <TutorDirectory onRequest={openRequest} onTutor={(tutor) => { setSelectedTutor(tutor); navigate("Tutor Profile"); }} />}
+          {activeView === "My Sessions" && <SessionsView onRequest={openRequest} onSession={(session) => { setSelectedSession(session); navigate("Session Details"); }} />}
+          {activeView === "Session Details" && <SessionDetails session={selectedSession} onBack={() => navigate("My Sessions")} onChat={() => navigate("Chat Session")} />}
+          {activeView === "Chat Session" && <ChatSession session={selectedSession} onBack={() => navigate("Session Details")} />}
+          {activeView === "Tutor Profile" && <TutorProfile tutor={selectedTutor} onBack={() => navigate("Find Tutors")} onRequest={openRequest} />}
           {activeView === "Resources" && <ResourcesView />}
           {activeView === "Profile" && <ProfileView />}
           {activeView === "Settings" && <SettingsView theme={theme} onThemeChange={(nextTheme) => {
@@ -95,17 +114,18 @@ function App() {
       <p>© 2026 StudyConnect · Built by SWEP Team 22</p>
     </footer>
     </main>
+    {isMenuOpen && <button className="menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setIsMenuOpen(false)} />}
     {showRequest && <RequestModal sent={requestSent}
     onClose={() => setShowRequest(false)} onSubmit={(event) =>
     { event.preventDefault(); setRequestSent(true); }} />}
     </div>
   );
 }
-function Sidebar({ activeView, onNavigate, onLogout }) {
+function Sidebar({ activeView, isOpen, onNavigate, onLogout }) {
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? "is-open" : ""}`}>
       <a className="brand" href="/" onClick={(event) => { event.preventDefault(); onNavigate("Home"); }}><span className="brand-mark"><Icon icon={GraduationCapIcon} size={19} /></span><span>StudyConnect</span></a>
-      <nav aria-label="Main navigation">
+      <nav id="main-navigation" aria-label="Main navigation">
         {navItems.map(([name, icon]) => <button key={name} className={`nav-item ${activeView === name ? "active" : ""}`} onClick={() => onNavigate(name)}><span className="nav-icon"><Icon icon={icon} size={16} /></span>{name}{["Messages", "Notifications"].includes(name) && <span className="nav-badge">1</span>}</button>)}
       </nav>
       <button className="nav-item logout" onClick={onLogout}><span className="nav-icon"><Icon icon={Logout01Icon} size={16} /></span>Logout</button>
@@ -145,7 +165,7 @@ function SessionCard({ session, onOpen }) {
 }
 
 function Activity({ icon, text, time }) {
-  return <div className="activity"><span className="activity-icon"><Icon icon={icon} size={14} /></span><div><p>{text}</p><small>{time}</small></div></div>;
+  return <div className="activity"><span className="activity-icon"><Icon icon={icon} size={18} /></span><div><p>{text}</p><small>{time}</small></div></div>;
 }
 
 function Icon({ icon, size = 16 }) {
@@ -244,7 +264,7 @@ function AuthView({ onLogin }) {
         <p className="auth-description">
           A peer-to-peer platform for physical and departmental resource sharing.
         </p>
-        <footer>Our Campus <span>·</span> Built by Students, For Students</footer>
+        <footer>OAU Campus <span>|</span> Built by Students, For Students</footer>
       </section>
 
       <section
