@@ -1,15 +1,37 @@
 import { useState } from "react";
 import SafetyGuidance from "./SafetyGuidance.jsx";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Add01Icon,
+  ArrowRight01Icon,
+  BookOpen01Icon,
+  Calendar03Icon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  GraduationCapIcon,
+  Home01Icon,
+  Location01Icon,
+  Logout01Icon,
+  Mail01Icon,
+  Moon02Icon,
+  Notification01Icon,
+  Search01Icon,
+  Settings01Icon,
+  Sun03Icon,
+  UserCircleIcon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons";
 
 const navItems = [
-  ["Home", "⌂"],
-  ["Find Tutors", "⌕"],
-  ["Find Learners", "♧"],
-  ["My Sessions", "▣"],
-  ["Resources", "▤"],
-  ["Messages", "✉"],
-  ["Notifications", "♢"],
-  ["Profile", "♙"],
+  ["Home", Home01Icon],
+  ["Find Tutors", Search01Icon],
+  ["Find Learners", UserGroupIcon],
+  ["My Sessions", Calendar03Icon],
+  ["Resources", BookOpen01Icon],
+  ["Messages", Mail01Icon],
+  ["Notifications", Notification01Icon],
+  ["Profile", UserCircleIcon],
+  ["Settings", Settings01Icon],
 ];
 
 const tutors = [
@@ -29,6 +51,7 @@ function App() {
   const [requestSent, setRequestSent] = useState(false);
   const [selectedTutor, setSelectedTutor] = useState(tutors[0]);
   const [selectedSession, setSelectedSession] = useState(sessions[0]);
+  const [theme, setTheme] = useState(() => localStorage.getItem("studyconnect-theme") || "light");
 
   const openRequest = () => {
     setRequestSent(false);
@@ -44,13 +67,13 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell theme-${theme}`}>
       <Sidebar activeView={activeView} onNavigate={setActiveView} onLogout={() => setActiveView("Auth")} />
       <main className="main-content">
         <header className="topbar">
-          <div className="mobile-brand"><span className="brand-mark">◆</span> StudyConnect</div>
-          <div className="top-search"><span>⌕</span><input placeholder="Search courses, tutors, or resources..." aria-label="Search" /></div>
-          <button className="top-icon" aria-label="Search">⌕</button>
+          <div className="mobile-brand"><span className="brand-mark"><Icon icon={GraduationCapIcon} size={16} /></span> StudyConnect</div>
+          <div className="top-search"><Icon icon={Search01Icon} size={13} /><input placeholder="Search courses, tutors, or resources..." aria-label="Search" /></div>
+          <button className="top-icon" aria-label="Search"><Icon icon={Search01Icon} size={16} /></button>
           <div className="user-chip"><div className="photo-avatar photo-chinedu">CO</div><span><strong>Chinedu Okafor</strong><small>Learner</small></span><b>⌄</b></div>
         </header>
         <div className="page">
@@ -62,11 +85,14 @@ function App() {
           {activeView === "Tutor Profile" && <TutorProfile tutor={selectedTutor} onBack={() => setActiveView("Find Tutors")} onRequest={openRequest} />}
           {activeView === "Resources" && <ResourcesView />}
           {activeView === "Profile" && <ProfileView />}
+          {activeView === "Settings" && <SettingsView theme={theme} onThemeChange={(nextTheme) => {
+            setTheme(nextTheme);
+            localStorage.setItem("studyconnect-theme", nextTheme);
+          }} />}
           {["Find Learners", "Messages", "Notifications"].includes(activeView) && <EmptyView title={activeView} />}
         </div>
     <footer className="app-footer">
-      <p>© 2026 StudyConnect - Peer Tutoring Platform</p>
-      <small>Built by cyberactivelabz Team | QA: Hammed Abdulhamid</small>
+      <p>© 2026 StudyConnect · Built by SWEP Team 22</p>
     </footer>
     </main>
     {showRequest && <RequestModal sent={requestSent}
@@ -78,48 +104,52 @@ function App() {
 function Sidebar({ activeView, onNavigate, onLogout }) {
   return (
     <aside className="sidebar">
-      <a className="brand" href="/" onClick={(event) => { event.preventDefault(); onNavigate("Home"); }}><span className="brand-mark">◆</span><span>StudyConnect</span></a>
+      <a className="brand" href="/" onClick={(event) => { event.preventDefault(); onNavigate("Home"); }}><span className="brand-mark"><Icon icon={GraduationCapIcon} size={19} /></span><span>StudyConnect</span></a>
       <nav aria-label="Main navigation">
-        {navItems.map(([name, icon]) => <button key={name} className={`nav-item ${activeView === name ? "active" : ""}`} onClick={() => onNavigate(name)}><span className="nav-icon">{icon}</span>{name}{["Messages", "Notifications"].includes(name) && <span className="nav-badge">1</span>}</button>)}
+        {navItems.map(([name, icon]) => <button key={name} className={`nav-item ${activeView === name ? "active" : ""}`} onClick={() => onNavigate(name)}><span className="nav-icon"><Icon icon={icon} size={16} /></span>{name}{["Messages", "Notifications"].includes(name) && <span className="nav-badge">1</span>}</button>)}
       </nav>
-      <button className="nav-item logout" onClick={onLogout}><span className="nav-icon">↪</span>Logout</button>
+      <button className="nav-item logout" onClick={onLogout}><span className="nav-icon"><Icon icon={Logout01Icon} size={16} /></span>Logout</button>
     </aside>
   );
 }
 
 function Dashboard({ onRequest, onNavigate }) {
   return (
-    <>
-      <section className="dashboard-heading"><div><h1>Good morning, Chinedu!</h1><p>Find a tutor, join a session, or access study resources.</p></div><button className="primary-button" onClick={onRequest}>+ Request a session</button></section>
+    <div className="dashboard-view">
+      <section className="dashboard-heading"><div><h1>Good morning, Chinedu!</h1><p>Find a tutor, join a session, or access study resources.</p></div><button className="primary-button" onClick={onRequest}><Icon icon={Add01Icon} size={14} /> Request a session</button></section>
       <SafetyGuidance />
       <section className="quick-grid">
-        <QuickCard icon="♙" title="Find Tutors" text="Get matched with verified peer tutors" onClick={() => onNavigate("Find Tutors")} />
-        <QuickCard icon="♧" title="Find Learners" text="Join or create a study group" onClick={() => onNavigate("Find Learners")} />
-        <QuickCard icon="▣" title="My Sessions" text="View upcoming and past sessions" onClick={() => onNavigate("My Sessions")} />
-        <QuickCard icon="▤" title="Resources" text="Access shared academic materials" onClick={() => onNavigate("Resources")} />
+        <QuickCard icon={UserGroupIcon} title="Find Tutors" text="Get matched with verified peer tutors" onClick={() => onNavigate("Find Tutors")} />
+        <QuickCard icon={UserCircleIcon} title="Find Learners" text="Join or create a study group" onClick={() => onNavigate("Find Learners")} />
+        <QuickCard icon={Calendar03Icon} title="My Sessions" text="View upcoming and past sessions" onClick={() => onNavigate("My Sessions")} />
+        <QuickCard icon={BookOpen01Icon} title="Resources" text="Access shared academic materials" onClick={() => onNavigate("Resources")} />
       </section>
       <div className="content-columns">
         <section className="panel upcoming-panel"><PanelHeading title="Upcoming Sessions" action="View all" onClick={() => onNavigate("My Sessions")} />{sessions.map((session) => <SessionCard key={session.course} session={session} onOpen={() => onNavigate("Session Details")} />)}</section>
-        <section className="panel activity-panel"><PanelHeading title="Recent Activity" action="View all" /><Activity icon="♙" text="You completed a session with Blessing Okafor" time="2 hours ago" /><Activity icon="✦" text="New message from Tunde Adebayo" time="3 hours ago" /><Activity icon="✓" text="You received a 5-star rating" time="Yesterday" /></section>
+        <section className="panel activity-panel"><PanelHeading title="Recent Activity" action="View all" /><Activity icon={CheckmarkCircle02Icon} text="You completed a session with Blessing Okafor" time="2 hours ago" /><Activity icon={Mail01Icon} text="New message from Tunde Adebayo" time="3 hours ago" /><Activity icon={CheckmarkCircle02Icon} text="You received a 5-star rating" time="Yesterday" /></section>
       </div>
-    </>
+    </div>
   );
 }
 
 function QuickCard({ icon, title, text, onClick }) {
-  return <button className="quick-card" onClick={onClick}><span className="quick-icon">{icon}</span><strong>{title}</strong><small>{text}</small></button>;
+  return <button className="quick-card" onClick={onClick}><span className="quick-icon"><Icon icon={icon} size={19} /></span><strong>{title}</strong><small>{text}</small></button>;
 }
 
 function PanelHeading({ title, action, onClick }) {
-  return <div className="panel-heading"><h2>{title}</h2><button className="link-button" onClick={onClick}>{action} →</button></div>;
+  return <div className="panel-heading"><h2>{title}</h2><button className="link-button" onClick={onClick}>{action} <Icon icon={ArrowRight01Icon} size={13} /></button></div>;
 }
 
 function SessionCard({ session, onOpen }) {
-  return <article className="session-card"><div className="session-course"><div className="mini-avatar avatar-blue">{session.initials}</div><div><strong>{session.course}</strong><small>{session.type}</small></div></div><div className="session-detail"><span>◷ {session.time}</span><span>⌖ {session.place}</span></div><button className="small-button" onClick={onOpen}>View Details</button></article>;
+  return <article className="session-card"><div className="session-course"><div className="mini-avatar avatar-blue">{session.initials}</div><div><strong>{session.course}</strong><small>{session.type}</small></div></div><div className="session-detail"><span><Icon icon={Clock01Icon} size={12} /> {session.time}</span><span><Icon icon={Location01Icon} size={12} /> {session.place}</span></div><button className="small-button" onClick={onOpen}>View Details</button></article>;
 }
 
 function Activity({ icon, text, time }) {
-  return <div className="activity"><span className="activity-icon">{icon}</span><div><p>{text}</p><small>{time}</small></div></div>;
+  return <div className="activity"><span className="activity-icon"><Icon icon={icon} size={14} /></span><div><p>{text}</p><small>{time}</small></div></div>;
+}
+
+function Icon({ icon, size = 16 }) {
+  return <HugeiconsIcon icon={icon} size={size} strokeWidth={1.8} />;
 }
 
 function TutorDirectory({ onRequest, onTutor }) {
@@ -151,7 +181,50 @@ function ResourcesView() {
 }
 
 function ProfileView() {
-  return <><section className="profile-banner"><div className="photo-avatar photo-chinedu large-avatar">CO</div><div><h1>Chinedu Okafor</h1><p>300 Level · Computer Science</p><span className="verified-pill">✓ Verified Student</span></div><button className="outline-button">Edit Profile</button></section><div className="profile-grid"><section className="panel"><PanelHeading title="Overview" action="" /><div className="overview-stats"><b>18<small>Sessions</small></b><b>4.9<small>Rating</small></b><b>12<small>Resources</small></b></div></section><section className="panel"><PanelHeading title="Recent Activity" action="View all" /><Activity icon="✓" text="You joined a study session" time="Yesterday" /><Activity icon="★" text="You received a 5-star rating" time="3 days ago" /></section></div></>;
+  return <><section className="profile-banner"><div className="photo-avatar photo-chinedu large-avatar">CO</div><div><h1>Chinedu Okafor</h1><p>300 Level · Computer Science</p><span className="verified-pill">✓ Verified Student</span></div><button className="outline-button">Edit Profile</button></section><div className="profile-grid"><section className="panel"><PanelHeading title="Overview" action="" /><div className="overview-stats"><b>18<small>Sessions</small></b><b>4.9<small>Rating</small></b><b>12<small>Resources</small></b></div></section><section className="panel"><PanelHeading title="Recent Activity" action="View all" /><Activity icon={CheckmarkCircle02Icon} text="You joined a study session" time="Yesterday" /><Activity icon={CheckmarkCircle02Icon} text="You received a 5-star rating" time="3 days ago" /></section></div></>;
+}
+
+function SettingsView({ theme, onThemeChange }) {
+  return (
+    <section className="settings-view">
+      <div className="view-heading">
+        <div><h1>Settings</h1><p>Personalize your StudyConnect workspace.</p></div>
+      </div>
+      <div className="settings-grid">
+        <section className="settings-card">
+          <div className="settings-card-heading">
+            <div className="settings-icon">◐</div>
+            <div><h2>Appearance</h2><p>Choose how StudyConnect looks on your device.</p></div>
+          </div>
+          <div className="theme-options" role="group" aria-label="Theme">
+            <button
+              className={`theme-option ${theme === "light" ? "selected" : ""}`}
+              onClick={() => onThemeChange("light")}
+              aria-pressed={theme === "light"}
+            >
+              <span className="theme-preview theme-preview-light"><Icon icon={Sun03Icon} size={17} /></span>
+              <span><strong>Light theme</strong><small>Bright and clear</small></span>
+              {theme === "light" && <b>✓</b>}
+            </button>
+            <button
+              className={`theme-option ${theme === "dark" ? "selected" : ""}`}
+              onClick={() => onThemeChange("dark")}
+              aria-pressed={theme === "dark"}
+            >
+              <span className="theme-preview theme-preview-dark"><Icon icon={Moon02Icon} size={17} /></span>
+              <span><strong>Dark theme</strong><small>Easy on the eyes</small></span>
+              {theme === "dark" && <b>✓</b>}
+            </button>
+          </div>
+        </section>
+        <section className="settings-card settings-info-card">
+          <div className="settings-icon">✦</div>
+          <h2>StudyConnect preferences</h2>
+          <p>Your theme is saved automatically on this device. More notification and privacy controls will be available here soon.</p>
+        </section>
+      </div>
+    </section>
+  );
 }
 
 function AuthView({ onLogin }) {
