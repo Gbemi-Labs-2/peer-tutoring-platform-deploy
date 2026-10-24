@@ -152,7 +152,18 @@ function AuthView({ onLogin }) {
 }
 
 function EmptyView({ title }) {
-  return <div className="empty-view"><span>♧</span><h1>{title}</h1><p>This area is ready for your campus activity.</p></div>;
+  return (
+    <div className="empty-view" style={{textAlign:'center', padding:'70px 20px'}}>
+      <span style={{fontSize:'50px', display:'block', marginBottom:'12px'}}>🚀</span>
+      <h1 style={{fontSize:'24px', fontWeight:'700'}}>{title}</h1>
+      <p style={{color:'#6b7a9a', marginTop:'8px', fontSize:'13px', maxWidth:'400px', margin:'8px auto'}}>
+        This area is ready for your campus activity. Our team is building amazing features here.
+      </p>
+      <button className="primary-button" style={{marginTop:'18px'}} onClick={() => window.location.href='/'}>
+        Back to Dashboard
+      </button>
+    </div>
+  );
 }
 
 function RequestModal({ sent, onClose, onSubmit }) {
