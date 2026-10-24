@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SafetyGuidance from "./SafetyGuidance.jsx";
 
 const navItems = [
   ["Home", "⌂"],
@@ -63,12 +64,17 @@ function App() {
           {activeView === "Profile" && <ProfileView />}
           {["Find Learners", "Messages", "Notifications"].includes(activeView) && <EmptyView title={activeView} />}
         </div>
-      </main>
-      {showRequest && <RequestModal sent={requestSent} onClose={() => setShowRequest(false)} onSubmit={(event) => { event.preventDefault(); setRequestSent(true); }} />}
+    <footer className="app-footer">
+      <p>© 2026 StudyConnect - Peer Tutoring Platform</p>
+      <small>Built by cyberactivelabz Team | QA: Hammed Abdulhamid</small>
+    </footer>
+    </main>
+    {showRequest && <RequestModal sent={requestSent}
+    onClose={() => setShowRequest(false)} onSubmit={(event) =>
+    { event.preventDefault(); setRequestSent(true); }} />}
     </div>
   );
 }
-
 function Sidebar({ activeView, onNavigate, onLogout }) {
   return (
     <aside className="sidebar">
@@ -85,6 +91,7 @@ function Dashboard({ onRequest, onNavigate }) {
   return (
     <>
       <section className="dashboard-heading"><div><h1>Good morning, Chinedu!</h1><p>Find a tutor, join a session, or access study resources.</p></div><button className="primary-button" onClick={onRequest}>+ Request a session</button></section>
+      <SafetyGuidance />
       <section className="quick-grid">
         <QuickCard icon="♙" title="Find Tutors" text="Get matched with verified peer tutors" onClick={() => onNavigate("Find Tutors")} />
         <QuickCard icon="♧" title="Find Learners" text="Join or create a study group" onClick={() => onNavigate("Find Learners")} />
@@ -276,7 +283,18 @@ function AuthView({ onLogin }) {
 }
 
 function EmptyView({ title }) {
-  return <div className="empty-view"><span>♧</span><h1>{title}</h1><p>This area is ready for your campus activity.</p></div>;
+  return (
+    <div className="empty-view" style={{textAlign:'center', padding:'70px 20px'}}>
+      <span style={{fontSize:'50px', display:'block', marginBottom:'12px'}}>🚀</span>
+      <h1 style={{fontSize:'24px', fontWeight:'700'}}>{title}</h1>
+      <p style={{color:'#6b7a9a', marginTop:'8px', fontSize:'13px', maxWidth:'400px', margin:'8px auto'}}>
+        This area is ready for your campus activity. Our team is building amazing features here.
+      </p>
+      <button className="primary-button" style={{marginTop:'18px'}} onClick={() => window.location.href='/'}>
+        Back to Dashboard
+      </button>
+    </div>
+  );
 }
 
 function RequestModal({ sent, onClose, onSubmit }) {

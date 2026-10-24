@@ -50,3 +50,6 @@ and persistence will be added in later iterations.
 
 - Name - role
 - Hammed Abdulhamid - Frontend dev
+
+- Name - role
+- Oyediran Usman Oyetolani - Backend dev

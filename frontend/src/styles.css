@@ -1733,3 +1733,33 @@ button.link-button:hover {
   background-color: #393baa !important;
   color: #ffffff !important;
 }
+.app-footer {
+  background: linear-gradient(135deg, #101a42 0%, #1a2a6c 100%);
+  color: #aab4d4;
+  text-align: center;
+  padding: 32px 20px;
+  font-size: 13px;
+  margin-top: 40px;
+  border-top: 1px solid #1e2a5a;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.app-footer p {
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.app-footer small {
+  font-size: 11px;
+  color: #8a95c0;
+  display: block;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+.app-footer small:hover {
+  color: #b8c2e0;
+}
