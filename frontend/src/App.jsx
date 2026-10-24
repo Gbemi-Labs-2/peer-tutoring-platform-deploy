@@ -56,12 +56,18 @@ function App() {
           {activeView === "Auth" && <AuthView onLogin={() => setActiveView("Home")} />}
           {["Find Learners", "Messages", "Notifications"].includes(activeView) && <EmptyView title={activeView} />}
         </div>
-      </main>
-      {showRequest && <RequestModal sent={requestSent} onClose={() => setShowRequest(false)} onSubmit={(event) => { event.preventDefault(); setRequestSent(true); }} />}
+    <footer className="app-footer">
+      <p>© 2026 StudyConnect - Peer Tutoring Platform</p>
+      <small>Built by cyberactivelabz Team | QA: Hammed Abdulhamid</small>
+    </footer>
+    </main>
+    {showRequest && <RequestModal sent={requestSent}
+    onClose={() => setShowRequest(false)} onSubmit={(event) =>
+    { event.preventDefault(); setRequestSent(true); }} />}
     </div>
   );
 }
-
+      </main>
 function Sidebar({ activeView, onNavigate, onLogout }) {
   return (
     <aside className="sidebar">
