@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { NotificationsService } from '../services/notifications.service';
 import { NotificationsRepository } from '../repositories/notifications.repository';
-import { NotificationType } from '../entities/notification.entity';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;

@@ -67,9 +67,6 @@ export class AuthService {
       throw new BadRequestException('Student profile not found');
     }
 
-    const updatedUser = await this.usersService.update(user.id, {
-      ...user,
-    });
     // Explicitly set isVerified to true in repository
     user.isVerified = true;
     await this.usersService.update(user.id, { role: user.role });

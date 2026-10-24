@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import {
   StudyPartnerMatch,
   MatchStatus,
 } from '../entities/study-partner-match.entity';
-import { User, UserRole } from '../../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 export class PartnersRepository {
@@ -20,14 +20,14 @@ export class PartnersRepository {
     studentAId: string,
     studentBId: string,
     courseId: string,
-    preferredFormat?: string,
+    _preferredFormat?: string,
     notes?: string,
   ): Promise<StudyPartnerMatch> {
     const match = this.matchRepo.create({
       studentAId,
       studentBId,
       courseId,
-      preferredFormat,
+      preferredFormat: _preferredFormat,
       notes,
       status: MatchStatus.ACTIVE,
     });
@@ -88,7 +88,7 @@ export class PartnersRepository {
   async findEligibleCandidate(
     requesterId: string,
     courseId: string,
-    preferredFormat?: string,
+    _preferredFormat?: string,
   ): Promise<User | null> {
     // Find IDs of users already actively matched with requester for this course
     const existingMatches = await this.matchRepo.find({
