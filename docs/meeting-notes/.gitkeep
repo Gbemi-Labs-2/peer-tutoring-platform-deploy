@@ -7,8 +7,8 @@ peer-tutoring-platform-/
 │   ├── 02-personas.md
 │   ├── 03-user-flows.md
 │   ├── 04-mvp-features.md
-|   ├── 05-frontend-backend-integration-audit.md
-|   ├── 06-product-requirements.md
+|   ├── frontend-backend-integration-audit.md
+|   ├── product-requirements.md
 │   ├── assets/                  # UI screenshots and diagrams
 │   └── meeting-notes/
 │       └── .gitkeep
