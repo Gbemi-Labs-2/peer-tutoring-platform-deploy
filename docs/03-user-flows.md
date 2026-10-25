@@ -8,9 +8,9 @@ Here's how to read it:
 - **Resources library:** the sidebar also links to it from anywhere in the app, not only during a session.
 - **Pairing and reviews:** these steps are shown as designed. I couldn't see them in your screenshots, so confirm with your teammates that they're built.
 
-- # 📋 PeerLink MVP Onboarding & User Flow Specification
+- # 📋User Flow Specification
 
-This document outlines the step-by-step onboarding screen flow required for the frontend MVP implementation.
+This document outlines the step-by-step onboarding screen flow required for the frontend implementation.
 
 ## 📌 Architectural Flow Overview
 
