@@ -1,5 +1,3 @@
-##kindly review if it tallies with the design
-
 ## MVP for StudyConnect
 
 The MVP is the smallest version that lets a student get matched, learn, and give feedback end to end. It's free for everyone, so there are no payment, subscription, or pricing screens.
