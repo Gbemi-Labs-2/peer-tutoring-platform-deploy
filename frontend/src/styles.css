@@ -1385,7 +1385,15 @@ nav {
   margin: 0 0 16px;
 }
 
-.auth-card>label {
+/* .auth-card>label {
+  display: grid;
+  gap: 6px;
+  color: #68738a;
+  font-size: 9px;
+  margin-bottom: 12px;
+} */
+
+.auth-card form > label {
   display: grid;
   gap: 6px;
   color: #68738a;
@@ -1665,7 +1673,14 @@ nav {
   margin: 0 0 20px;
 }
 
-.auth-card>label {
+/* .auth-card>label {
+  gap: 7px;
+  color: #56617a;
+  font-size: 11px;
+  margin-bottom: 13px;
+} */
+
+.auth-card form > label {
   gap: 7px;
   color: #56617a;
   font-size: 11px;
@@ -1911,8 +1926,15 @@ button.link-button:hover {
   box-shadow: 0 20px 55px rgba(7, 25, 45, 0.42);
 }
 
-.auth-card h2,
+/* .auth-card h2,
 .auth-card > label,
+.auth-card input,
+.auth-card select {
+  color: #ffffff;
+} */
+
+.auth-card h2,
+.auth-card form > label,
 .auth-card input,
 .auth-card select {
   color: #ffffff;
@@ -1922,7 +1944,13 @@ button.link-button:hover {
   text-shadow: 0 1px 2px rgba(0, 0, 0, .28);
 }
 
-.auth-card > label,
+/* .auth-card > label,
+.role-toggle {
+  color: #ffffff;
+  font-weight: 600;
+} */
+
+.auth-card form > label,
 .role-toggle {
   color: #ffffff;
   font-weight: 600;
@@ -2586,4 +2614,43 @@ button.link-button:hover {
 .app-shell.theme-light .top-search {
   background: #c5d1d6 !important;
   border-color: #9fafb7 !important;
+}
+
+/* Login and sign-up messages (readable on the dark glass card) */
+.auth-error,
+.auth-info {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.auth-error {
+  color: #ffd7d3;
+  background: rgba(180, 35, 24, 0.38);
+  border: 1px solid rgba(255, 164, 155, 0.7);
+}
+
+.auth-info {
+  color: #e3efff;
+  background: rgba(60, 110, 190, 0.32);
+  border: 1px solid rgba(160, 200, 255, 0.6);
+}
+
+/* Disabled states while the app talks to the server */
+.auth-card input:disabled,
+.auth-card select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-switch button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
