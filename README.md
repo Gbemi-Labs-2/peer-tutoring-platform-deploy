@@ -53,3 +53,7 @@ and persistence will be added in later iterations.
 
 - Name - role
 - Oyediran Usman Oyetolani - Backend dev
+
+- Name — role
+- Oguntona Samuel (Version control engginer)
+
