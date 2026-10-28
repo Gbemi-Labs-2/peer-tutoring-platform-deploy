@@ -1647,13 +1647,17 @@ nav {
   align-items: center;
   justify-content: center;
   padding: clamp(0px, 1.5vw, 18px);
+  border: 0;
+  background: transparent;
 }
 
 .auth-card {
+  position: relative;
+  z-index: 1;
   width: min(100%, 460px);
   max-width: 460px;
   padding: clamp(22px, 3vw, 34px);
-  border: 1px solid #e3e6f0;
+  border: 0;
   border-radius: 10px;
   box-shadow: 0 16px 45px #17265c12;
 }
@@ -2007,6 +2011,20 @@ button.link-button:hover {
 .auth-submit:hover {
   color: #102238 !important;
   background: #e4b957 !important;
+}
+
+/* The hero is an image layer, not a bordered card. */
+.auth-app .auth-hero {
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+@media (max-width: 760px) {
+  .auth-app .auth-hero {
+    height: auto !important;
+    min-height: 0 !important;
+    aspect-ratio: 1672 / 940 !important;
+  }
 }
 
 .settings-grid {
@@ -2653,4 +2671,107 @@ button.link-button:hover {
 .auth-switch button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.role-banner,
+.directory-placeholder,
+.materials-view {
+  background: #fff;
+  border: 1px solid #e6e8ef;
+  border-radius: 8px;
+  padding: 22px;
+}
+
+.role-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #26324b;
+}
+
+.role-banner span,
+.auth-help {
+  color: #8b94a9;
+  font-size: 12px;
+}
+
+.directory-placeholder {
+  display: grid;
+  gap: 14px;
+  max-width: 720px;
+}
+
+.directory-placeholder h1,
+.materials-view h1 {
+  margin: 0;
+  color: #202b47;
+}
+
+.materials-view {
+  display: grid;
+  gap: 22px;
+}
+
+.upload-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+}
+
+.material-list {
+  display: grid;
+  gap: 10px;
+}
+
+.material-item {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e6e8ef;
+  border-radius: 6px;
+  padding: 13px;
+  color: #34415d;
+}
+
+.material-item small {
+  color: #8b94a9;
+}
+
+.course-picker {
+  border: 1px solid #e6e8ef;
+  border-radius: 5px;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  color: #6b7690;
+  font-size: 11px;
+}
+
+.course-picker legend {
+  color: #26324b;
+  font-weight: 600;
+  padding: 0 4px;
+}
+
+.course-edit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+  color: #6b7690;
+  font-size: 11px;
+}
+
+.text-button {
+  border: 0;
+  background: none;
+  color: #4749c5;
+  padding: 0;
+  font-size: 11px;
+  text-align: left;
+}
+
+.forgot-link {
+  margin-top: -6px;
 }

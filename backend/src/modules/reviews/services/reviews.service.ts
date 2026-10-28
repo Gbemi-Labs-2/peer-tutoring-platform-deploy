@@ -55,19 +55,22 @@ export class ReviewsService {
     const review = await this.reviewsRepo.createReview(
       learnerId,
       session.tutorId,
+      session.courseId,
       dto,
     );
 
     // Recalculate tutor average rating & review count
-    const { average, count } = await this.reviewsRepo.calculateTutorRating(
-      session.tutorId,
-    );
+    const { average, count } = await this.reviewsRepo.calculateTutorRating(session.tutorId);
     await this.usersRepo.update(session.tutorId, {
       rating: average,
       reviewCount: count,
     });
 
     return review;
+  }
+
+  async getTutorCourseReviews(tutorId: string, courseId: string): Promise<Review[]> {
+    return this.reviewsRepo.findByTutorAndCourse(tutorId, courseId);
   }
 
   async getTutorReviews(tutorId: string): Promise<Review[]> {

@@ -58,6 +58,12 @@ export class UsersService {
     return updated!;
   }
 
+  async updatePassword(id: string, password: string): Promise<void> {
+    const user = await this.findById(id);
+    const hashedPassword = await bcrypt.hash(password, await bcrypt.genSalt(10));
+    await this.usersRepository.update(user.id, { password: hashedPassword });
+  }
+
   async remove(id: string): Promise<{ message: string }> {
     await this.findById(id);
     await this.usersRepository.delete(id);

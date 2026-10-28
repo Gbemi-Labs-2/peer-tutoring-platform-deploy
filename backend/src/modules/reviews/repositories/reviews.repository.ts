@@ -14,12 +14,14 @@ export class ReviewsRepository {
   async createReview(
     learnerId: string,
     tutorId: string,
+    courseId: string,
     dto: CreateReviewDto,
   ): Promise<Review> {
     const review = this.reviewRepo.create({
       sessionId: dto.sessionId,
       tutorId,
       learnerId,
+      courseId,
       rating: dto.rating,
       comment: dto.comment,
     });
@@ -38,7 +40,15 @@ export class ReviewsRepository {
   async findByTutor(tutorId: string): Promise<Review[]> {
     return this.reviewRepo.find({
       where: { tutorId },
-      relations: ['learner'],
+      relations: ['learner', 'course'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findByTutorAndCourse(tutorId: string, courseId: string): Promise<Review[]> {
+    return this.reviewRepo.find({
+      where: { tutorId, courseId },
+      relations: ['learner', 'course'],
       order: { createdAt: 'DESC' },
     });
   }
