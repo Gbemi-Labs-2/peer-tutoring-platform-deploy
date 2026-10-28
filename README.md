@@ -46,7 +46,7 @@ and persistence will be added in later iterations.
 ## Team
 
 - Name — role
-- Olubiyi Elijah(Fullstack Dev)
+- Olubiyi Elijah (Fullstack Dev)
 
 - Name - role
 - Hammed Abdulhamid - Frontend dev
@@ -55,5 +55,5 @@ and persistence will be added in later iterations.
 - Oyediran Usman Oyetolani - Backend dev
 
 - Name — role
-- Oguntona Samuel (Version control engginer)
+- Oguntona Samuel (Version control engineer)
 
