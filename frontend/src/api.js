@@ -51,7 +51,8 @@ export const api = {
   register: (body) => post("/auth/register", body, true),
   verifyRegistration: (body) => post("/auth/verify-otp", body, true),
   resendRegistrationOtp: (body) => post("/auth/resend-otp", body, true),
-  login: (body) => post("/auth/login", body, true),
+  login: ({ email, password } = {}) =>
+    post("/auth/login", { email, password }, true),
   forgotPassword: (body) => post("/auth/forgot-password", body, true),
   resendPasswordOtp: (body) => post("/auth/forgot-password/resend", body, true),
   verifyPasswordOtp: (body) => post("/auth/forgot-password/verify", body, true),

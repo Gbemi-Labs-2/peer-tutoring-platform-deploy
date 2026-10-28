@@ -41,7 +41,7 @@ test("API origins and versioned URLs produce a single version prefix", () => {
     "https://api.example.test/api/v1",
   );
 });
-test("public login omits stale auth and returns the real user", async () => {
+test("public login sends only accepted credentials and omits stale auth", async () => {
   const storage = setup(async (url, options) => {
     assert.equal(url, "/api/v1/auth/login");
     assert.equal(options.headers.Authorization, undefined);
@@ -55,8 +55,13 @@ test("public login omits stale auth and returns the real user", async () => {
   });
   storage.set("studyconnect-token", "stale");
   assert.equal(
-    (await api.login({ email: "ada@example.test", password: "password" })).user
-      .id,
+    (
+      await api.login({
+        email: "ada@example.test",
+        password: "password",
+        gender: "Female",
+      })
+    ).user.id,
     "test-user",
   );
 });
