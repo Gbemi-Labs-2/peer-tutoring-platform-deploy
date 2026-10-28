@@ -6,6 +6,10 @@ Welcome to the backend repository of **CampusConnect**, a peer-to-peer academic 
 
 Built with **NestJS**, **TypeORM**, **PostgreSQL**, **Redis**, and **Resend**.
 
+For a verified demo learner that can sign in through the live frontend, see
+[Live demo account setup](DEMO_ACCOUNT.md). Set its password in the backend's
+environment settings, then run `npm run seed:demo` after building the backend.
+
 ---
 
 ## 📖 Table of Contents
