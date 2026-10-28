@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: studyconnect-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build
+    startCommand: pnpm run start:prod
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PREFIX
+        value: api/v1
+      - key: DB_SYNCHRONIZE
+        value: "false"
+      - key: DB_LOGGING
+        value: "false"
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
