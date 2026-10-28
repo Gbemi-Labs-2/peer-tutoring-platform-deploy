@@ -17,12 +17,10 @@ services:
       - key: DB_LOGGING
         value: "false"
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: SWEP PROJECT
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
-      - key: RESEND_API_KEY
-        sync: false
-      - key: MAIL_FROM
-        sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://peer-tutoring-platform-deploy.vercel.app
