@@ -1,36 +1,90 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1";
+import { API_URL } from "./config.js";
 
-async function request(path, options = {}) {
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
+export async function request(path, options = {}) {
+  const { public: isPublic = false, ...fetchOptions } = options;
   const token = localStorage.getItem("studyconnect-token");
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
+  let response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...fetchOptions,
+      headers: {
+        "Content-Type": "application/json",
+        ...(!isPublic && token ? { Authorization: `Bearer ${token}` } : {}),
+        ...fetchOptions.headers,
+      },
+    });
+  } catch (error) {
+    if (error.name === "AbortError") throw error;
+    throw new ApiError(
+      "Unable to reach StudyConnect. Check your connection and try again.",
+      0,
+    );
+  }
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(payload.message || "The request could not be completed.");
+  if (!response.ok || payload.success === false) {
+    if (response.status === 401 && !isPublic && token)
+      window.dispatchEvent(new Event("studyconnect:expired"));
+    throw new ApiError(
+      Array.isArray(payload.message)
+        ? payload.message.join(" ")
+        : payload.message || "This request could not be completed.",
+      response.status,
+    );
   }
   return payload.data ?? payload;
 }
-
+const post = (path, body, isPublic = false) =>
+  request(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+    public: isPublic,
+  });
+const patch = (path, body = {}) =>
+  request(path, { method: "PATCH", body: JSON.stringify(body) });
 export const api = {
-  register: (body) => request("/auth/register", { method: "POST", body: JSON.stringify(body) }),
-  verifyRegistration: (body) => request("/auth/verify-otp", { method: "POST", body: JSON.stringify(body) }),
-  resendRegistrationOtp: (body) => request("/auth/resend-otp", { method: "POST", body: JSON.stringify(body) }),
-  login: (body) => request("/auth/login", { method: "POST", body: JSON.stringify(body) }),
-  forgotPassword: (body) => request("/auth/forgot-password", { method: "POST", body: JSON.stringify(body) }),
-  resendPasswordOtp: (body) => request("/auth/forgot-password/resend", { method: "POST", body: JSON.stringify(body) }),
-  verifyPasswordOtp: (body) => request("/auth/forgot-password/verify", { method: "POST", body: JSON.stringify(body) }),
-  resetPassword: (body) => request("/auth/reset-password", { method: "POST", body: JSON.stringify(body) }),
+  register: (body) => post("/auth/register", body, true),
+  verifyRegistration: (body) => post("/auth/verify-otp", body, true),
+  resendRegistrationOtp: (body) => post("/auth/resend-otp", body, true),
+  login: (body) => post("/auth/login", body, true),
+  forgotPassword: (body) => post("/auth/forgot-password", body, true),
+  resendPasswordOtp: (body) => post("/auth/forgot-password/resend", body, true),
+  verifyPasswordOtp: (body) => post("/auth/forgot-password/verify", body, true),
+  resetPassword: (body) => post("/auth/reset-password", body, true),
   me: () => request("/auth/me"),
-  updateProfile: (body) => request("/users/profile/me", { method: "PATCH", body: JSON.stringify(body) }),
-  tutors: (course) => request(`/users?role=TUTOR${course ? `&courseToTeach=${encodeURIComponent(course)}` : ""}`),
+  updateProfile: (body) => patch("/users/profile/me", body),
+  tutors: (course) =>
+    request(
+      `/users?role=TUTOR${course ? `&courseToTeach=${encodeURIComponent(course)}` : ""}`,
+    ),
+  learners: () => request("/users?role=LEARNER"),
+  user: (id) => request(`/users/${encodeURIComponent(id)}`),
   sessions: () => request("/tutoring/my-sessions"),
+  session: (id) => request(`/tutoring/${encodeURIComponent(id)}`),
+  book: (body) => post("/tutoring/book", body),
+  updateSession: (id, status) =>
+    patch(`/tutoring/${encodeURIComponent(id)}/status`, { status }),
+  openGroups: () => request("/tutoring/group/open"),
+  joinGroup: (id) => post(`/tutoring/${encodeURIComponent(id)}/join`, {}),
   materials: () => request("/materials"),
-  uploadMaterial: (body) => request("/materials", { method: "POST", body: JSON.stringify(body) }),
+  uploadMaterial: (body) => post("/materials", body),
+  downloadMaterial: (id) =>
+    post(`/materials/${encodeURIComponent(id)}/download`, {}),
   courses: () => request("/courses"),
+  partners: () => request("/partners/my-partners"),
+  match: (body) => post("/partners/match", body),
+  reshuffle: (id, reason) =>
+    post(`/partners/${encodeURIComponent(id)}/reshuffle`, { reason }),
+  notifications: () => request("/notifications"),
+  unread: () => request("/notifications/unread-count"),
+  readNotification: (id) =>
+    patch(`/notifications/${encodeURIComponent(id)}/read`),
+  readAllNotifications: () => patch("/notifications/read-all"),
+  reviews: (id) => request(`/reviews/tutor/${encodeURIComponent(id)}`),
+  review: (body) => post("/reviews", body),
 };

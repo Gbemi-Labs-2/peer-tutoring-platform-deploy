@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { UsersService } from '../../users/services/users.service';
 import { OtpService } from '../services/otp.service';
 import { MailService } from '../services/mail.service';
+import { UserRole } from '../../users/entities/user.entity';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -18,6 +19,7 @@ describe('AuthService', () => {
       findByEmail: jest.fn(),
       findById: jest.fn(),
       update: jest.fn(),
+      verifyEmail: jest.fn(),
     };
 
     jwtService = {
@@ -48,5 +50,26 @@ describe('AuthService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('persists verification before issuing a token and returns the persisted profile', async () => {
+    const student = { id: 'student-id', email: 'ada@example.test', role: UserRole.LEARNER, isVerified: false };
+    usersService.findByEmail.mockResolvedValue(student);
+    usersService.verifyEmail.mockResolvedValue({ ...student, isVerified: true });
+
+    const result = await service.verifyOtp({ email: ' ADA@example.test ', code: '123456' });
+
+    expect(otpService.verifyOtp).toHaveBeenCalledWith('ada@example.test', '123456');
+    expect(usersService.verifyEmail).toHaveBeenCalledWith(student.id);
+    expect(usersService.verifyEmail.mock.invocationCallOrder[0]).toBeLessThan(jwtService.sign.mock.invocationCallOrder[0]);
+    expect(result.user.isVerified).toBe(true);
+    expect(student.isVerified).toBe(false);
+  });
+
+  it('does not verify the user or issue a token for an invalid OTP', async () => {
+    otpService.verifyOtp.mockRejectedValue(new Error('Invalid OTP'));
+    await expect(service.verifyOtp({ email: 'ada@example.test', code: '000000' })).rejects.toThrow('Invalid OTP');
+    expect(usersService.verifyEmail).not.toHaveBeenCalled();
+    expect(jwtService.sign).not.toHaveBeenCalled();
   });
 });

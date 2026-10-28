@@ -71,16 +71,13 @@ export class AuthService {
       throw new BadRequestException('Student profile not found');
     }
 
-    // Explicitly set isVerified to true in repository
-    user.isVerified = true;
-    await this.usersService.update(user.id, { role: user.role });
-
-    const token = this.generateToken(user);
+    const verifiedUser = await this.usersService.verifyEmail(user.id);
+    const token = this.generateToken(verifiedUser);
 
     return {
       accessToken: token,
       tokenType: 'Bearer',
-      user: this.sanitizeUser(user),
+      user: this.sanitizeUser(verifiedUser),
     };
   }
 

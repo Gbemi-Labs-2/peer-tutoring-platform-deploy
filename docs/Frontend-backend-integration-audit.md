@@ -1,46 +1,50 @@
-# Frontend–Backend Integration Audit
+# StudyConnect integration audit
 
-## 1. Purpose
+Audited on 28 October 2026. This supersedes the preliminary audit. Source inspection covers the frontend, backend controllers, DTOs, services, and the product requirements, personas, user flows, and MVP documents. Product documents describe several capabilities that the current backend does not implement.
 
-This document tracks the integration between the CampusConnect peer-tutoring frontend and backend. Its purpose is to identify features that are documented, implemented, connected, and verified, while distinguishing confirmed findings from items that still require investigation.
+## Defects fixed
 
-## 2. Preliminary Findings
+- `App.jsx` referenced undefined `authChecked`, `user`, `setUser`, and `clearToken`. It now owns one authenticated user, waits for session checking, and distinguishes network failures from expired authentication. Failed session checks can be retried without discarding a valid token. Login and OTP callbacks retain the returned user. Logout clears the token and user; other tabs react to token changes.
+- `Auth.js` appended `/api/v1` even when the configured URL already included it, sent an unsupported `name` during registration, and sent a forbidden extra `otp` field. Both API clients now share URL normalization and request handling, preserving the existing exported helpers and token key.
+- OTP verification mutated a user in memory but persisted only `role`. `/auth/me` still returned `isVerified=false`, and the next login failed. Verification now persists through an internal `UsersService.verifyEmail` operation before issuing the token. The public profile DTO still cannot set verification. Regression tests cover persistence, sequencing, and invalid OTPs. Live signup, reload, and subsequent login validate the fix.
+- Dashboard session clicks previously navigated without selecting the session. ID-based hash routes now retrieve the exact session and survive reload/back navigation. Legacy view names remain aliases.
+- Fake tutors, sessions, activities, chat, ratings, files, unread badges, and simulated booking success were removed. Null backend course arrays are handled safely.
+- Material sharing previously selected a local file but saved only URL metadata through browser prompts. It now explicitly requests a hosted URL and a real course; it does not imply binary upload support.
 
-| Feature                | Frontend Evidence                                                                | Backend Documentation                                                                         | Audit Status                                                |
-| ---------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Authentication         | The inspected `AuthView` calls `onLogin`, which changes the active view to Home. | Registration, OTP verification, OTP resend, login, and current-user endpoints are documented. | Backend integration not demonstrated in the inspected code. |
-| Tutor recommendations  | README states that recommendations use mock data.                                | Student/profile and course endpoints are documented.                                          | Real API integration requires verification.                 |
-| Upcoming sessions      | README states that upcoming sessions use mock data.                              | Tutoring booking and session-list endpoints are documented.                                   | Real API integration requires verification.                 |
-| Campus verification    | README lists this as planned.                                                    | Authentication and verification endpoints are documented.                                     | Frontend workflow requires verification.                    |
-| Study-partner matching | README lists matching as planned.                                                | Partner-matching endpoints are documented.                                                    | Frontend workflow requires verification.                    |
-| Messaging              | README lists messaging as planned.                                               | Backend implementation and available endpoints require further inspection.                    | Not yet verified.                                           |
-| Data persistence       | README lists persistence as planned.                                             | The backend documents PostgreSQL and TypeORM.                                                 | End-to-end persistence requires verification.               |
+## Current integration
 
-## 3. Authentication Finding
+| Feature | Backend contract and frontend behavior |
+| --- | --- |
+| Account access | Register, OTP verify/resend, login, current user, and password recovery retain existing endpoints. Required fields, code/password validation, pending states, and server feedback are visible. Returning unverified users can continue verification after a rejected login. |
+| Tutor discovery | Fetches TUTOR and BOTH profiles; searches name/department/course and filters by returned department/course values. Profile details and reviews come from user/review APIs. No fabricated availability, ratings, or recommendations. |
+| Learner discovery | Uses the learner directory endpoint. No unsupported invitation action is presented. |
+| Booking | Posts real tutor/course UUIDs, future ISO timestamp, duration, goal, mode, and venue/link to `/tutoring/book`. Group capacity appears only for group sessions. Success opens the created session. |
+| Sessions | Fetches own sessions, exact details, and open groups. Supports joining groups, role-appropriate confirm/complete/cancel actions, history, meeting links, and completed-session reviews. Errors remain visible. |
+| Study partners | Calls matching/history/reshuffle APIs. Explains that a match is immediate and reshuffling can end the old match without finding a new one. Shows actual profile course overlap when present, rather than claiming an algorithmic compatibility score. |
+| Materials | Loads actual metadata, searches/filters it, shares hosted links, records access, and exposes the returned HTTP(S) URL. |
+| Profile | Saves validated academic/profile fields and teaching/learning course arrays through the profile PATCH endpoint. Verification is read-only in the UI. |
+| Theme | Light/dark preference is stored under the existing localStorage key. Local Inter font avoids remote font dependencies. |
+| Notifications | Uses real notification list/unread count and read/read-all endpoints. Unknown/failed counts are not replaced with invented numbers. |
+| Messages | Honest unavailable state, including the legacy session-chat destination; there is no chat endpoint. |
 
-The inspected `App.jsx` code passes this callback to `AuthView`:
+## Design and accessibility
 
-`onLogin={() => setActiveView("Home")}`
+Midnight navy, indigo, lavender, white surfaces, slate background, and a green success accent form a shared token system. Inter is self-hosted with its license. Primary body/form/navigation text is 14–16px; smaller type is reserved for supporting labels and metadata. Cards use 12–16px radii, restrained shadows, and responsive spacing. The original campus photograph remains on account access screens.
 
-The login and signup buttons call `onLogin` directly. In the inspected snippet, there is no demonstrated request to the backend, credential submission, OTP verification, or authentication-response handling.
+Navigation is grouped into Overview, Discover, Learning, Communication, and Account. Desktop uses a fixed sidebar. The mobile drawer uses native dialog focus trapping, Escape/backdrop/close controls, focus return, and body scroll locking. Booking and material dialogs use the same primitive. Focus styles, a skip link, semantic forms, reduced motion, and status/error announcements are shared. Safety is a compact, expandable checklist after dashboard tasks and alongside booking/partner workflows.
 
-This is a preliminary finding based on the inspected code, not proof that authentication logic is absent throughout the repository.
+## Backend limitations kept explicit
 
-## 4. Recommended Verification
+- No chat, attachment transport, invitation acceptance/decline, availability timetable, schedule-overlap scoring, notification preferences, or attendance-verification API.
+- Partner candidate selection currently picks a verified student, excluding active matches; it does not enforce course overlap, format, or schedule compatibility. The UI states this limitation.
+- Institutional email restrictions and campus scoping described in the PRD are not enforced by the current registration/directory implementation. Email verification is labeled as email verification, not institutional identity verification.
+- Material endpoints store hosted-file metadata, not uploaded binary files. Externally hosted resource availability remains the provider's responsibility.
+- Backend notification APIs work with stored notifications, but inspected booking/matching services do not automatically create notifications for every event. Empty activity is therefore legitimate.
+- Session topology follows the implemented backend: one tutor with one or multiple learners. It does not pretend to implement the different multi-tutor model described in some product documents.
+- Local development uses console OTP delivery; real email delivery requires configured Resend credentials and was not exercised.
 
-1. Inspect the complete frontend source for API clients, authentication services, and other backend requests.
-2. Compare the authentication request payloads and response handling with the backend API documentation.
-3. Verify that navigation to protected views occurs only after successful authentication.
-4. Check whether tutor recommendations and upcoming sessions retrieve real API data or use mock data.
-5. Verify session booking, matching, error handling, loading states, and persistence.
-6. Record reproducible results and update this audit as features are tested.
+## Validation
 
-## 5. Evidence and Limitations
+Run `npm test` and `npm run build` in `frontend`. The frontend tests use Node's built-in test runner and add no dependency. Run `pnpm run build`, `pnpm test`, and `pnpm run test:e2e --runInBand` in `backend`.
 
-The initial findings are based on the frontend README, the inspected `AuthView` snippet, and the backend README/API reference.
-
-Documented endpoints do not by themselves prove that the corresponding backend functionality works or that the frontend is integrated with it. Further source inspection and testing are required before classifying a feature as complete or defective.
-
-## 6. Intended Outcome
-
-Maintain a shared, evidence-based view of integration progress so the team can prioritize missing connections, avoid duplicate work, and verify the platform's readiness for students.
+Browser validation uses system Chromium with Playwright against the actual local PostgreSQL/Nest/Vite services and isolated, clearly named QA records. Error, loading, and expiry checks deliberately intercept responses only in the browser test; application code contains no mock API layer. Tests inspect real persistence and exact session IDs. Responsive checks cover all ten main screens at 320, 375, 768, 1024, and 1440px. Screenshots show test accounts and test sessions, not production activity. Automatic accessibility checks supplement keyboard tests and do not establish complete WCAG conformance.

@@ -42,4 +42,12 @@ describe('UsersService', () => {
     expect(result).toEqual(mockUser);
     expect(repo.findById).toHaveBeenCalledWith('uuid-1');
   });
+
+  it('persists email verification separately from editable profile fields', async () => {
+    repo.findById.mockResolvedValue({ id: 'student-id', isVerified: false });
+    const verified = { id: 'student-id', isVerified: true };
+    repo.update.mockResolvedValue(verified);
+    expect(await service.verifyEmail('student-id')).toEqual(verified);
+    expect(repo.update).toHaveBeenCalledWith('student-id', { isVerified: true });
+  });
 });
