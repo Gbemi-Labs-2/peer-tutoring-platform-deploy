@@ -59,4 +59,55 @@ describe('MailService', () => {
       service.sendPasswordResetOtp('student@example.test', '654321'),
     ).rejects.toThrow(ServiceUnavailableException);
   });
+
+  it('sends through Brevo using the verified sender address and server-side API key', async () => {
+    const service = new MailService({
+      get: (key: string) =>
+        key === 'BREVO_API_KEY'
+          ? 'brevo-test-key'
+          : key === 'MAIL_FROM'
+            ? 'StudyConnect <student@gmail.com>'
+            : undefined,
+    } as unknown as ConfigService);
+    const send = jest.spyOn(global, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ messageId: 'message-id' }), { status: 201 }),
+    );
+
+    await expect(
+      service.sendVerificationOtp('learner@example.test', '123456', 'Ada'),
+    ).resolves.toBe(true);
+
+    expect(send).toHaveBeenCalledWith('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'api-key': 'brevo-test-key',
+        'content-type': 'application/json',
+      },
+      body: expect.stringContaining('"email":"learner@example.test"'),
+    });
+    const requestBody = JSON.parse(send.mock.calls[0][1]?.body as string);
+    expect(requestBody.sender).toEqual({
+      name: 'StudyConnect',
+      email: 'student@gmail.com',
+    });
+    expect(requestBody.subject).toContain('123456');
+    expect(requestBody.htmlContent).toContain('123456');
+  });
+
+  it('does not treat Brevo rejection as successful email delivery', async () => {
+    const service = new MailService({
+      get: (key: string) =>
+        key === 'BREVO_API_KEY'
+          ? 'brevo-test-key'
+          : key === 'MAIL_FROM'
+            ? 'student@gmail.com'
+            : undefined,
+    } as unknown as ConfigService);
+    jest.spyOn(global, 'fetch').mockResolvedValue(new Response(null, { status: 403 }));
+
+    await expect(
+      service.sendPasswordResetOtp('learner@example.test', '654321'),
+    ).rejects.toThrow(ServiceUnavailableException);
+  });
 });

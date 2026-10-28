@@ -55,9 +55,12 @@ Open `http://localhost:5173` or the forwarded port 5173 URL shown in the
 Codespaces **Ports** panel. Vite binds to the Codespace interface and proxies
 `/api/v1` requests to the backend on port 3000, so the browser does not call its
 own `localhost` for the API. Keep the forwarded ports private and both services
-running. Registration and password recovery need a real `RESEND_API_KEY` in
-`backend/.env`; without it, email requests return an error and OTPs are not
-printed to logs. The API health check is at
+running. Registration and password recovery need either a `RESEND_API_KEY` or
+`BREVO_API_KEY` in `backend/.env`, plus a sender verified with that provider;
+without them, email requests return an error and OTPs are not printed to logs.
+Resend generally needs an authenticated sending domain; Brevo can verify a
+single sender address by email for a demo, though a domain gives better
+deliverability. The API health check is at
 `http://localhost:3000/api/v1/health`; Swagger is at
 `http://localhost:3000/docs`.
 

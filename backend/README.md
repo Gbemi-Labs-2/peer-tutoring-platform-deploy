@@ -131,8 +131,10 @@ DB_PASSWORD=your_password
 DB_DATABASE=study_connect_db
 DB_SYNCHRONIZE=true
 JWT_SECRET=replace-with-a-random-secret-before-production
-RESEND_API_KEY=re_your_api_key_here
-MAIL_FROM=onboarding@resend.dev
+# Configure one provider and a sender verified with it.
+RESEND_API_KEY=
+BREVO_API_KEY=
+MAIL_FROM=StudyConnect <your-verified-sender@example.com>
 ```
 
 ---
@@ -331,8 +333,8 @@ Under the **Environment** tab of your Render Web Service, add:
 * `DB_DATABASE` = *(From your Render PostgreSQL)*
 * `DB_SYNCHRONIZE` = `false`
 * `JWT_SECRET` = *(A secure random secret key)*
-* `RESEND_API_KEY` = *(Your Resend.com API Key)*
-* `MAIL_FROM` = `onboarding@resend.dev`
+* Set either `RESEND_API_KEY` (Resend) or `BREVO_API_KEY` (Brevo).
+* `MAIL_FROM` must be a sender address verified with the selected provider.
 
 The initial TypeORM migration creates a clean schema or safely records a
 baseline for a database that already contains all application tables. It
@@ -342,9 +344,12 @@ production and use forward migrations for later schema changes.
 
 Production startup also requires a randomly generated `JWT_SECRET` of at least
 32 characters. Generate it locally with `openssl rand -base64 48` and enter it
-only in the platform's secret settings. `RESEND_API_KEY` is required for
-registration and password recovery email delivery; OTPs are never printed to
-application logs.
+only in the platform's secret settings. A verified email provider is required
+for registration and password recovery email delivery; OTPs are never printed
+to application logs. Resend normally requires an authenticated domain. Brevo
+can verify an individual sender email by sending a code to that address, but
+free-mail senders may have reduced deliverability until their domain is
+authenticated.
 
 ### Step 4: Verify Live API
 * **Health Check:** `https://your-app.onrender.com/api/v1/health`

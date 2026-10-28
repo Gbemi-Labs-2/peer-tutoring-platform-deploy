@@ -22,19 +22,24 @@ const escapeHtml = (value: string) =>
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private resend: Resend | null = null;
+  private readonly brevoApiKey: string | null;
   private readonly fromEmail: string;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
+    const brevoApiKey = this.configService.get<string>('BREVO_API_KEY')?.trim();
+    this.brevoApiKey = brevoApiKey || null;
     this.fromEmail =
       this.configService.get<string>('MAIL_FROM') || 'onboarding@resend.dev';
 
     if (apiKey && apiKey !== 're_your_resend_api_key_here') {
       this.resend = new Resend(apiKey);
       this.logger.log('Resend Email Client initialized successfully');
+    } else if (this.brevoApiKey) {
+      this.logger.log('Brevo Email Client initialized successfully');
     } else {
       this.logger.warn(
-        'RESEND_API_KEY is not configured. Email verification and password recovery are unavailable.',
+        'Email provider is not configured. Email verification and password recovery are unavailable.',
       );
     }
   }
@@ -45,21 +50,50 @@ export class MailService {
     subject: string;
     html: string;
   }): Promise<void> {
-    if (!this.resend) {
+    if (!this.resend && !this.brevoApiKey) {
       throw new ServiceUnavailableException(
-        'Email delivery is not configured. Set RESEND_API_KEY and try again.',
+        'Email delivery is not configured. Set RESEND_API_KEY or BREVO_API_KEY and try again.',
       );
     }
 
     try {
-      const { error } = await this.resend.emails.send(message);
-      if (error) throw new Error('Email provider rejected the message');
+      if (this.resend) {
+        const { error } = await this.resend.emails.send(message);
+        if (error) throw new Error('Email provider rejected the message');
+      } else {
+        const sender = this.parseBrevoSender(message.from);
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            'api-key': this.brevoApiKey!,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender,
+            to: [{ email: message.to }],
+            subject: message.subject,
+            htmlContent: message.html,
+          }),
+        });
+        if (!response.ok) throw new Error('Email provider rejected the message');
+      }
     } catch {
       this.logger.error('Email delivery failed');
       throw new ServiceUnavailableException(
         'Email delivery failed. Please try again later.',
       );
     }
+  }
+
+  private parseBrevoSender(from: string): { name?: string; email: string } {
+    const match = from.match(/^\s*(.*?)\s*<([^<>]+)>\s*$/);
+    const email = (match?.[2] || from).trim();
+    const name = match?.[1].trim();
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      throw new Error('MAIL_FROM must be a verified sender email address');
+    }
+    return { email, ...(name ? { name } : {}) };
   }
 
   async sendVerificationOtp(
