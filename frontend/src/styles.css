@@ -1337,7 +1337,7 @@ label small {
   height: 100dvh;
   background:
     linear-gradient(180deg, #172554a6, #172554e8),
-    url("/resource/StudyConnect_OAU_Campus_Hero.webp") center/cover;
+    url("/resource/oau-campus-gate.jpg") 46% center / cover no-repeat;
   padding: 70px clamp(32px, 6vw, 90px);
   color: #fff;
 }
