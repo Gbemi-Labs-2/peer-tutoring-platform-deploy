@@ -64,6 +64,13 @@ export class UsersService {
     await this.usersRepository.update(user.id, { password: hashedPassword });
   }
 
+  // Email verification is an internal auth operation, never a public profile field.
+  async verifyEmail(id: string): Promise<User> {
+    const user = await this.findById(id);
+    const updated = await this.usersRepository.update(user.id, { isVerified: true });
+    return updated!;
+  }
+
   async remove(id: string): Promise<{ message: string }> {
     await this.findById(id);
     await this.usersRepository.delete(id);
