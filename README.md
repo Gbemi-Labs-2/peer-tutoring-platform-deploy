@@ -19,22 +19,53 @@ agree on a study session, and schedule a meeting digitally. The actual
 knowledge delivery remains localized and in person, allowing students to
 learn through direct physical communication within their institution.
 
-## Status
+## Application architecture
 
-🚧 Frontend skeleton — MVP scoping
+The existing application has a React 18 / Vite frontend in `frontend/` and a
+NestJS / TypeORM backend in `backend/`. The backend uses PostgreSQL. The
+frontend calls the real API; features not implemented by the backend are shown
+as unavailable rather than simulated.
 
-## Getting started
+## Run locally
 
-The initial frontend is built with React and Vite:
+Use Node.js 20 or newer, pnpm, and a PostgreSQL database. Start the backend in
+one terminal:
 
 ```bash
-npm install
+cd backend
+pnpm install --frozen-lockfile
+cp .env.example .env
+```
+
+Edit `backend/.env` with the PostgreSQL connection details, then run:
+
+```bash
+pnpm start:dev
+```
+
+In a second terminal, start the frontend:
+
+```bash
+cd frontend
+npm ci
 npm run dev
 ```
 
-The current interface uses mock data for tutor recommendations and upcoming
-sessions. Backend authentication, campus verification, matching, messaging,
-and persistence will be added in later iterations.
+Open `http://localhost:5173` or the forwarded port 5173 URL shown in the
+Codespaces **Ports** panel. Vite binds to the Codespace interface and proxies
+`/api/v1` requests to the backend on port 3000, so the browser does not call its
+own `localhost` for the API. Keep the forwarded ports private and both services
+running. Registration and password recovery need a real `RESEND_API_KEY` in
+`backend/.env`; without it, email requests return an error and OTPs are not
+printed to logs. The API health check is at
+`http://localhost:3000/api/v1/health`; Swagger is at
+`http://localhost:3000/docs`.
+
+For a deployed frontend, set `VITE_API_URL` to the deployed backend's API base
+URL (for example, `https://api.example.com/api/v1`) in the frontend build
+environment. Configure the backend `CORS_ORIGIN` as the exact deployed
+frontend origin, without a trailing slash. Never use the sample development
+credentials or database synchronization setting for production.
 
 ## Documentation
 

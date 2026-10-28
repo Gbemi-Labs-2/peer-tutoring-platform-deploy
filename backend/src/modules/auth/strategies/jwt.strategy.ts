@@ -19,14 +19,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret') || 'super_secret_jwt_key_study_connect_2026',
+      secretOrKey: configService.getOrThrow<string>('jwt.secret'),
     });
   }
 
   async validate(payload: JwtPayload) {
     const user = await this.usersService.findById(payload.sub);
     if (!user) {
-      throw new UnauthorizedException('User account no longer active or exists');
+      throw new UnauthorizedException(
+        'User account no longer active or exists',
+      );
     }
     return user;
   }

@@ -1,6 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    };
+    return entities[character];
+  });
 
 @Injectable()
 export class MailService {
@@ -10,18 +26,48 @@ export class MailService {
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('RESEND_API_KEY');
-    this.fromEmail = this.configService.get<string>('MAIL_FROM') || 'onboarding@resend.dev';
+    this.fromEmail =
+      this.configService.get<string>('MAIL_FROM') || 'onboarding@resend.dev';
 
     if (apiKey && apiKey !== 're_your_resend_api_key_here') {
       this.resend = new Resend(apiKey);
       this.logger.log('Resend Email Client initialized successfully');
     } else {
-      this.logger.warn('RESEND_API_KEY not configured. Running in DEV mode: OTPs will be printed to server console.');
+      this.logger.warn(
+        'RESEND_API_KEY is not configured. Email verification and password recovery are unavailable.',
+      );
     }
   }
 
-  async sendVerificationOtp(email: string, otpCode: string, firstName?: string): Promise<boolean> {
-    const studentName = firstName || 'Student';
+  private async sendEmail(message: {
+    from: string;
+    to: string;
+    subject: string;
+    html: string;
+  }): Promise<void> {
+    if (!this.resend) {
+      throw new ServiceUnavailableException(
+        'Email delivery is not configured. Set RESEND_API_KEY and try again.',
+      );
+    }
+
+    try {
+      const { error } = await this.resend.emails.send(message);
+      if (error) throw new Error('Email provider rejected the message');
+    } catch {
+      this.logger.error('Email delivery failed');
+      throw new ServiceUnavailableException(
+        'Email delivery failed. Please try again later.',
+      );
+    }
+  }
+
+  async sendVerificationOtp(
+    email: string,
+    otpCode: string,
+    firstName?: string,
+  ): Promise<boolean> {
+    const studentName = escapeHtml(firstName || 'Student');
 
     const htmlContent = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
@@ -37,32 +83,22 @@ export class MailService {
       </div>
     `;
 
-    if (!this.resend) {
-      this.logger.log(`\n=======================================================\n[DEV MAIL SIMULATION]\nTo: ${email}\nStudent: ${studentName}\nOTP Code: ${otpCode}\nValid for: 10 minutes\n=======================================================`);
-      return true;
-    }
-
-    try {
-      await this.resend.emails.send({
-        from: this.fromEmail,
-        to: email,
-        subject: `${otpCode} is your StudyConnect Verification Code`,
-        html: htmlContent,
-      });
-      this.logger.log(`Verification OTP sent via Resend to ${email}`);
-      return true;
-    } catch (error) {
-      this.logger.error(`Failed to send email via Resend to ${email}: ${error.message}`, error.stack);
-      // Still log in dev fallback so students can continue testing
-      this.logger.log(`[FALLBACK DEV OTP for ${email}]: ${otpCode}`);
-      return false;
-    }
-
+    await this.sendEmail({
+      from: this.fromEmail,
+      to: email,
+      subject: `${otpCode} is your StudyConnect Verification Code`,
+      html: htmlContent,
+    });
+    return true;
   }
 
-  async sendPasswordResetOtp(email: string, otpCode: string, firstName?: string): Promise<boolean> {
-      const recipientName = firstName || 'Student';
-      const htmlContent = `
+  async sendPasswordResetOtp(
+    email: string,
+    otpCode: string,
+    firstName?: string,
+  ): Promise<boolean> {
+    const recipientName = escapeHtml(firstName || 'Student');
+    const htmlContent = `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #1e3a8a;">StudyConnect Password Reset</h2>
           <p>Hello ${recipientName},</p>
@@ -74,44 +110,26 @@ export class MailService {
         </div>
       `;
 
-      if (!this.resend) {
-        this.logger.log(`[DEV PASSWORD RESET OTP for ${email}]: ${otpCode}`);
-        return true;
-      }
+    await this.sendEmail({
+      from: this.fromEmail,
+      to: email,
+      subject: `${otpCode} is your StudyConnect password reset code`,
+      html: htmlContent,
+    });
+    return true;
+  }
 
-      try {
-        await this.resend.emails.send({
-          from: this.fromEmail,
-          to: email,
-          subject: `${otpCode} is your StudyConnect password reset code`,
-          html: htmlContent,
-        });
-        return true;
-      } catch (error) {
-        this.logger.error(`Failed to send password reset email to ${email}: ${error.message}`, error.stack);
-        this.logger.log(`[FALLBACK DEV PASSWORD RESET OTP for ${email}]: ${otpCode}`);
-        return false;
-      }
-    }
-
-  async sendPasswordResetConfirmation(email: string, firstName?: string): Promise<boolean> {
-      const recipientName = firstName || 'Student';
-      if (!this.resend) {
-        this.logger.log(`[DEV PASSWORD RESET CONFIRMATION for ${email}]`);
-        return true;
-      }
-
-      try {
-        await this.resend.emails.send({
-          from: this.fromEmail,
-          to: email,
-          subject: 'Your StudyConnect password was successfully reset',
-          html: `<p>Hello ${recipientName},</p><p>Your StudyConnect password was successfully reset. If you did not make this change, contact support immediately.</p>`,
-        });
-        return true;
-      } catch (error) {
-        this.logger.error(`Failed to send password reset confirmation to ${email}: ${error.message}`, error.stack);
-        return false;
-    }
+  async sendPasswordResetConfirmation(
+    email: string,
+    firstName?: string,
+  ): Promise<boolean> {
+    const recipientName = firstName || 'Student';
+    await this.sendEmail({
+      from: this.fromEmail,
+      to: email,
+      subject: 'Your StudyConnect password was successfully reset',
+      html: `<p>Hello ${escapeHtml(recipientName)},</p><p>Your StudyConnect password was successfully reset. If you did not make this change, contact support immediately.</p>`,
+    });
+    return true;
   }
 }

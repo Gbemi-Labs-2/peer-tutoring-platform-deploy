@@ -41,7 +41,7 @@ Navigation is grouped into Overview, Discover, Learning, Communication, and Acco
 - Material endpoints store hosted-file metadata, not uploaded binary files. Externally hosted resource availability remains the provider's responsibility.
 - Backend notification APIs work with stored notifications, but inspected booking/matching services do not automatically create notifications for every event. Empty activity is therefore legitimate.
 - Session topology follows the implemented backend: one tutor with one or multiple learners. It does not pretend to implement the different multi-tutor model described in some product documents.
-- Local development uses console OTP delivery; real email delivery requires configured Resend credentials and was not exercised.
+- Registration and password recovery require configured Resend credentials. Email delivery failures are surfaced to the frontend; OTPs are never written to application logs. Live email delivery was not exercised.
 
 ## Validation
 

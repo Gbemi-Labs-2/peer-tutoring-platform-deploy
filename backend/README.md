@@ -4,11 +4,11 @@
 
 Welcome to the backend repository of **CampusConnect**, a peer-to-peer academic platform designed to connect students who need academic assistance with fellow students who excel in those subjects.
 
-Built with **NestJS**, **TypeORM**, **PostgreSQL**, **Redis**, and **Resend**.
+Built with **NestJS**, **TypeORM**, **PostgreSQL**, and **Resend**.
 
-For a verified demo learner that can sign in through the live frontend, see
+For a verified demo learner that can sign in through the frontend, see
 [Live demo account setup](DEMO_ACCOUNT.md). Set its password in the backend's
-environment settings, then run `npm run seed:demo` after building the backend.
+environment settings, then run `pnpm run seed:demo` after building the backend.
 
 ---
 
@@ -52,7 +52,7 @@ Study-connect-Backend/
 ├── PRD_TECHNICAL_SPEC.md            # Complete Product & Technical Specification
 ├── README.md                        # This project guide
 ├── nest-cli.json                    # NestJS CLI configuration
-├── package.json                     # Dependencies and npm scripts
+├── package.json                     # Dependencies and package scripts
 ├── tsconfig.json                    # TypeScript compiler config & module path aliases
 │
 └── src/
@@ -110,9 +110,8 @@ We use **PostgreSQL** as the relational database and **TypeORM** as the Object-R
 
 ### Step 1: Install Dependencies
 ```bash
-npm install
+pnpm install --frozen-lockfile
 ```
-*(Or `corepack pnpm install`)*
 
 ---
 
@@ -131,7 +130,7 @@ DB_USERNAME=postgres
 DB_PASSWORD=your_password
 DB_DATABASE=study_connect_db
 DB_SYNCHRONIZE=true
-JWT_SECRET=super_secret_jwt_key_study_connect_2026
+JWT_SECRET=replace-with-a-random-secret-before-production
 RESEND_API_KEY=re_your_api_key_here
 MAIL_FROM=onboarding@resend.dev
 ```
@@ -140,7 +139,7 @@ MAIL_FROM=onboarding@resend.dev
 
 ### Step 3: Run the Application in Development Mode
 ```bash
-npm run start:dev
+pnpm run start:dev
 ```
 
 You will see:
@@ -153,9 +152,10 @@ You will see:
 
 ### Step 4: Run the Test Suite
 ```bash
-npm test
+pnpm test
 ```
-*(All 9 test suites and 40 unit test assertions run in band and pass cleanly).*
+Current verification runs 12 unit suites (52 tests) and one HTTP e2e test; run
+the commands above to check the current checkout.
 
 ---
 
@@ -296,8 +296,8 @@ All endpoints are versioned with the `/api/v1` prefix.
   * 1-to-5 star ratings, testimonials, and automatic recalculation of tutor ratings.
   * Disciplinary reporting for misconduct, scams, and no-shows with admin resolution.
   * Real-time in-app notification badge and alert system.
-* [ ] **Phase 7: Cloud Deployment on Render.com** (Ready to Deploy 🚀)
-  * Free managed PostgreSQL instance & Node.js Web Service on Render.
+* [ ] **Phase 7: Cloud Deployment** (blocked pending production migrations and credentials)
+  * Prepare the managed PostgreSQL schema, backend secrets, and frontend API URL before deployment.
 
 ---
 
@@ -314,8 +314,9 @@ Deploying the backend live on Render makes it available for testing and defense 
 1. Click **New +** ➔ **Web Service** and connect your GitHub repository (`samuelbukumni/campusconnect`).
 2. Configure settings:
    * **Runtime:** `Node`
-   * **Build Command:** `npm install && npm run build`
-   * **Start Command:** `npm run start:prod`
+   * **Root Directory:** `backend`
+   * **Build Command:** `pnpm install --frozen-lockfile && pnpm run build`
+* **Start Command:** `pnpm run start:prod` (runs the reviewed migrations before starting the API)
    * **Plan:** `Free`
 
 ### Step 3: Add Environment Variables in Render Dashboard
@@ -328,10 +329,22 @@ Under the **Environment** tab of your Render Web Service, add:
 * `DB_USERNAME` = *(From your Render PostgreSQL)*
 * `DB_PASSWORD` = *(From your Render PostgreSQL)*
 * `DB_DATABASE` = *(From your Render PostgreSQL)*
-* `DB_SYNCHRONIZE` = `true`
+* `DB_SYNCHRONIZE` = `false`
 * `JWT_SECRET` = *(A secure random secret key)*
 * `RESEND_API_KEY` = *(Your Resend.com API Key)*
 * `MAIL_FROM` = `onboarding@resend.dev`
+
+The initial TypeORM migration creates a clean schema or safely records a
+baseline for a database that already contains all application tables. It
+refuses to alter a partially populated schema. Production startup runs pending
+migrations with `DB_SYNCHRONIZE=false`; keep synchronization disabled in
+production and use forward migrations for later schema changes.
+
+Production startup also requires a randomly generated `JWT_SECRET` of at least
+32 characters. Generate it locally with `openssl rand -base64 48` and enter it
+only in the platform's secret settings. `RESEND_API_KEY` is required for
+registration and password recovery email delivery; OTPs are never printed to
+application logs.
 
 ### Step 4: Verify Live API
 * **Health Check:** `https://your-app.onrender.com/api/v1/health`

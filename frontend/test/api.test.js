@@ -30,6 +30,8 @@ const reply = (data, status = 200) =>
   });
 
 test("API origins and versioned URLs produce a single version prefix", () => {
+  assert.equal(normalizeApiUrl(), "/api/v1");
+  assert.equal(normalizeApiUrl("/api/v1/"), "/api/v1");
   assert.equal(
     normalizeApiUrl("https://api.example.test/"),
     "https://api.example.test/api/v1",
@@ -41,7 +43,7 @@ test("API origins and versioned URLs produce a single version prefix", () => {
 });
 test("public login omits stale auth and returns the real user", async () => {
   const storage = setup(async (url, options) => {
-    assert.equal(url, "http://localhost:3000/api/v1/auth/login");
+    assert.equal(url, "/api/v1/auth/login");
     assert.equal(options.headers.Authorization, undefined);
     assert.deepEqual(JSON.parse(options.body), {
       email: "ada@example.test",
