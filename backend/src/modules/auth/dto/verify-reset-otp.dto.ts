@@ -1,0 +1,14 @@
+import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class VerifyResetOtpDto {
+  @ApiProperty({ example: 'student@university.edu' })
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @ApiProperty({ example: '123456', minLength: 6, maxLength: 6 })
+  @IsString()
+  @Length(6, 6)
+  code: string;
+}

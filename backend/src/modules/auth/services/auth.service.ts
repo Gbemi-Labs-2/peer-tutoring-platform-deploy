@@ -14,6 +14,10 @@ import { AuthResponseDto } from '../dto/auth-response.dto';
 import { User } from '../../users/entities/user.entity';
 import { OtpService } from './otp.service';
 import { MailService } from './mail.service';
+import { OtpType } from '../entities/otp.entity';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { VerifyResetOtpDto } from '../dto/verify-reset-otp.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +127,60 @@ export class AuthService {
     };
   }
 
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    const email = dto.email.toLowerCase().trim();
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('No account found with this email address');
+    }
+
+    const code = await this.otpService.generateOtp(email, OtpType.PASSWORD_RESET);
+    await this.mailService.sendPasswordResetOtp(email, code, user.firstName);
+    return { message: 'A password reset code has been sent to your email address.' };
+  }
+
+  async resendPasswordResetOtp(dto: ForgotPasswordDto): Promise<{ message: string }> {
+    return this.forgotPassword(dto);
+  }
+
+  async verifyPasswordResetOtp(dto: VerifyResetOtpDto): Promise<{ resetToken: string }> {
+    const email = dto.email.toLowerCase().trim();
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('No account found with this email address');
+    }
+
+    await this.otpService.verifyOtp(email, dto.code, OtpType.PASSWORD_RESET);
+    return {
+      resetToken: this.jwtService.sign(
+        { sub: user.id, email, purpose: 'PASSWORD_RESET' },
+        { expiresIn: '10m' },
+      ),
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    let payload: { sub: string; email: string; purpose: string };
+    try {
+      payload = this.jwtService.verify(dto.resetToken);
+    } catch {
+      throw new BadRequestException('The password reset session is invalid or expired');
+    }
+
+    if (payload.purpose !== 'PASSWORD_RESET') {
+      throw new BadRequestException('The password reset session is invalid');
+    }
+
+    const user = await this.usersService.findByEmail(payload.email);
+    if (!user || user.id !== payload.sub) {
+      throw new BadRequestException('Account not found');
+    }
+
+    await this.usersService.updatePassword(user.id, dto.newPassword);
+    await this.mailService.sendPasswordResetConfirmation(user.email, user.firstName);
+    return { message: 'Your password was successfully reset.' };
+  }
+
   async getMe(userId: string): Promise<Partial<User>> {
     const user = await this.usersService.findById(userId);
     return this.sanitizeUser(user);
@@ -143,6 +201,7 @@ export class AuthService {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      gender: user.gender,
       matricNumber: user.matricNumber,
       department: user.department,
       level: user.level,

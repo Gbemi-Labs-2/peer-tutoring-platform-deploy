@@ -22,6 +22,9 @@ import { AuthResponseDto } from '../dto/auth-response.dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { ForgotPasswordDto } from '../dto/forgot-password.dto';
+import { VerifyResetOtpDto } from '../dto/verify-reset-otp.dto';
+import { ResetPasswordDto } from '../dto/reset-password.dto';
 
 @ApiTags('Authentication & Verification')
 @Controller('auth')
@@ -89,6 +92,34 @@ export class AuthController {
   })
   async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Public()
+  @Post('forgot-password/resend')
+  @HttpCode(HttpStatus.OK)
+  async resendPasswordResetOtp(@Body() dto: ForgotPasswordDto) {
+    return this.authService.resendPasswordResetOtp(dto);
+  }
+
+  @Public()
+  @Post('forgot-password/verify')
+  @HttpCode(HttpStatus.OK)
+  async verifyPasswordResetOtp(@Body() dto: VerifyResetOtpDto) {
+    return this.authService.verifyPasswordResetOtp(dto);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   @UseGuards(JwtAuthGuard)

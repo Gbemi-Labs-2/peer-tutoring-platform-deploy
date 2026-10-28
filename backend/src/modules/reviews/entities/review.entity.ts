@@ -8,6 +8,7 @@ import {
 import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../users/entities/user.entity';
 import { TutoringSession } from '../../tutoring/entities/tutoring-session.entity';
+import { Course } from '../../courses/entities/course.entity';
 
 @Entity('reviews')
 export class Review extends BaseEntity {
@@ -34,6 +35,14 @@ export class Review extends BaseEntity {
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'learnerId' })
   learner: User;
+
+  @Index()
+  @Column({ type: 'uuid' })
+  courseId: string;
+
+  @ManyToOne(() => Course, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'courseId' })
+  course: Course;
 
   @Column({ type: 'int' })
   rating: number; // 1 to 5

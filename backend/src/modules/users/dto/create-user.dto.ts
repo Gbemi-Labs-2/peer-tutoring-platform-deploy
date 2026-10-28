@@ -32,6 +32,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   lastName: string;
 
+  @ApiPropertyOptional({ enum: ['Male', 'Female'] })
+  @IsOptional()
+  @IsString()
+  gender?: string;
+
   @ApiPropertyOptional({ example: 'SCI/2023/1042' })
   @IsOptional()
   @IsString()

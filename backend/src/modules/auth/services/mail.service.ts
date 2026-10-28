@@ -57,5 +57,61 @@ export class MailService {
       this.logger.log(`[FALLBACK DEV OTP for ${email}]: ${otpCode}`);
       return false;
     }
+
+  }
+
+  async sendPasswordResetOtp(email: string, otpCode: string, firstName?: string): Promise<boolean> {
+      const recipientName = firstName || 'Student';
+      const htmlContent = `
+        <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #1e3a8a;">StudyConnect Password Reset</h2>
+          <p>Hello ${recipientName},</p>
+          <p>Use this 6-digit code to reset your StudyConnect password:</p>
+          <div style="background: #f1f5f9; padding: 16px; text-align: center; margin: 24px 0;">
+            <strong style="font-size: 32px; letter-spacing: 8px; color: #1e3a8a;">${otpCode}</strong>
+          </div>
+          <p style="color: #64748b;">This code expires in 10 minutes. If you did not request a reset, you can ignore this email.</p>
+        </div>
+      `;
+
+      if (!this.resend) {
+        this.logger.log(`[DEV PASSWORD RESET OTP for ${email}]: ${otpCode}`);
+        return true;
+      }
+
+      try {
+        await this.resend.emails.send({
+          from: this.fromEmail,
+          to: email,
+          subject: `${otpCode} is your StudyConnect password reset code`,
+          html: htmlContent,
+        });
+        return true;
+      } catch (error) {
+        this.logger.error(`Failed to send password reset email to ${email}: ${error.message}`, error.stack);
+        this.logger.log(`[FALLBACK DEV PASSWORD RESET OTP for ${email}]: ${otpCode}`);
+        return false;
+      }
+    }
+
+  async sendPasswordResetConfirmation(email: string, firstName?: string): Promise<boolean> {
+      const recipientName = firstName || 'Student';
+      if (!this.resend) {
+        this.logger.log(`[DEV PASSWORD RESET CONFIRMATION for ${email}]`);
+        return true;
+      }
+
+      try {
+        await this.resend.emails.send({
+          from: this.fromEmail,
+          to: email,
+          subject: 'Your StudyConnect password was successfully reset',
+          html: `<p>Hello ${recipientName},</p><p>Your StudyConnect password was successfully reset. If you did not make this change, contact support immediately.</p>`,
+        });
+        return true;
+      } catch (error) {
+        this.logger.error(`Failed to send password reset confirmation to ${email}: ${error.message}`, error.stack);
+        return false;
+    }
   }
 }

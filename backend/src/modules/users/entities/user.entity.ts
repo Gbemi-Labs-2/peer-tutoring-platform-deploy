@@ -9,6 +9,7 @@ export enum UserRole {
   LEARNER = 'LEARNER',
   TUTOR = 'TUTOR',
   BOTH = 'BOTH',
+  STUDY_PARTNER = 'STUDY_PARTNER',
   ADMIN = 'ADMIN',
 }
 
@@ -26,6 +27,9 @@ export class User extends BaseEntity {
 
   @Column({ type: 'varchar', length: 100 })
   lastName: string;
+
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  gender: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
   matricNumber: string;

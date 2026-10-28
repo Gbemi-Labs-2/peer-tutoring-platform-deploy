@@ -44,4 +44,13 @@ export class ReviewsController {
   async getTutorReviews(@Param('tutorId', ParseUUIDPipe) tutorId: string) {
     return this.reviewsService.getTutorReviews(tutorId);
   }
+
+  @Public()
+  @Get('tutor/:tutorId/course/:courseId')
+  async getTutorCourseReviews(
+    @Param('tutorId', ParseUUIDPipe) tutorId: string,
+    @Param('courseId', ParseUUIDPipe) courseId: string,
+  ) {
+    return this.reviewsService.getTutorCourseReviews(tutorId, courseId);
+  }
 }
